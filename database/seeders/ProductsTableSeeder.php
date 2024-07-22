@@ -18,8 +18,9 @@ class ProductsTableSeeder extends Seeder
      */
     public function run()
     {
-        $categories = Category::all();
+        $categories = Category::all();      
         $brands = Brand::all();
+        $memek = 'aapala';
 
         foreach ($categories as $category) {
             foreach ($brands as $brand) {
