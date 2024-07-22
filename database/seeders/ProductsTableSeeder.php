@@ -20,7 +20,6 @@ class ProductsTableSeeder extends Seeder
     {
         $categories = Category::all();      
         $brands = Brand::all();
-        $memek = 'aapala';
 
         foreach ($categories as $category) {
             foreach ($brands as $brand) {
