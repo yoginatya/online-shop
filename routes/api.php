@@ -35,7 +35,7 @@ Route::post('/logout', [UserController::class, 'logout'])->name('user.logout')->
 
 Route::post('/forgot-password', [UserController::class, 'forgotPassword'])->name('password.email');
 
-Route::get('/reset-password', [UserController::class, 'resetPassword'])->name('password.reset');
+Route::post('/reset-password', [UserController::class, 'resetPassword'])->name('password.reset');
 
 Route::middleware('auth:sanctum')->group(function() {
     Route::post('/products', [ProductController::class, 'store'])->name('products.store');

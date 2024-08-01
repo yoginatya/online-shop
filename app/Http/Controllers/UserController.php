@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
@@ -124,6 +125,87 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+    // public function forgotPassword(Request $request)
+    // {
+    //     // Validate request data
+    //     $validator = Validator::make($request->all(), [
+    //         'email' => 'required|email',
+    //     ], [
+    //         'email.required' => 'Email is required.',
+    //         'email.email' => 'Invalid email format.',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             "data" => [
+    //                 "errors" => $validator->errors()
+    //             ]
+    //         ], 422);
+    //     }
+
+    //     // Send reset password link
+    //     $status = Password::sendResetLink(
+    //         $request->only('email')
+    //     );
+
+    //     if ($status == Password::RESET_LINK_SENT) {
+    //         return response()->json(['message' => __($status)], 200);
+    //     } else {
+    //         return response()->json(['message' => __($status)], 400);
+    //     }
+    // }
+
+    // /**
+    //  * Handle resetting the password.
+    //  *
+    //  * @param  \Illuminate\Http\Request  $request
+    //  * @return \Illuminate\Http\Response
+    //  */
+    // public function resetPassword(Request $request)
+    // {
+    //     // Validate request data
+    //     $validator = Validator::make($request->all(), [
+    //         'token' => 'required',
+    //         'email' => 'required|email',
+    //         'password' => 'required|min:6|confirmed',
+    //     ], [
+    //         'token.required' => 'Token is required.',
+    //         'email.required' => 'Email is required.',
+    //         'email.email' => 'Invalid email format.',
+    //         'password.required' => 'Password is required.',
+    //         'password.min' => 'Password must be at least 6 characters.',
+    //         'password.confirmed' => 'Passwords do not match.',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             "data" => [
+    //                 "errors" => $validator->errors()
+    //             ]
+    //         ], 422);
+    //     }
+
+    //     // Attempt to reset the password
+    //     $status = Password::reset(
+    //         $request->only('email', 'password', 'password_confirmation', 'token'),
+    //         function ($user, $password) {
+    //             $user->forceFill([
+    //                 'password' => Hash::make($password)
+    //             ])->setRememberToken(Str::random(60));
+
+    //             $user->save();
+
+    //             event(new PasswordReset($user));
+    //         }
+    //     );
+
+    //     if ($status == Password::PASSWORD_RESET) {
+    //         return response()->json(['message' => __($status)], 200);
+    //     } else {
+    //         return response()->json(['message' => __($status)], 400);
+    //     }
+    // }
+
     public function forgotPassword(Request $request)
     {
         // Validate request data
@@ -141,25 +223,27 @@ class UserController extends Controller
                 ]
             ], 422);
         }
-
-        // Send reset password link
+        
         $status = Password::sendResetLink(
             $request->only('email')
         );
+        
+        // Send reset password link and get the token
+        $broker = Password::broker();
+        $user = $broker->getUser($request->only('email'));
 
-        if ($status == Password::RESET_LINK_SENT) {
-            return response()->json(['message' => __($status)], 200);
+        if ($user) {
+            $token = $broker->createToken($user);
+
+            return response()->json([
+                'message' => 'Reset link sent to your email.',
+                'token' => $token
+            ], 200);
         } else {
-            return response()->json(['message' => __($status)], 400);
+            return response()->json(['message' => 'Email not found.'], 400);
         }
     }
 
-    /**
-     * Handle resetting the password.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function resetPassword(Request $request)
     {
         // Validate request data
