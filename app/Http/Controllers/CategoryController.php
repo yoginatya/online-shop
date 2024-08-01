@@ -74,7 +74,16 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        Category::destroy($id);
+        // Cek apakah kategori dengan ID yang diberikan ada
+        $category = Category::find($id);
+    
+        if (!$category) {
+            return response()->json(['message' => 'Kategori tidak ditemukan'], 404);
+        }
+    
+        // Hapus kategori
+        $category->delete();
         return response()->json(['message' => 'Kategori berhasil dihapus'], 200);
     }
+    
 }
